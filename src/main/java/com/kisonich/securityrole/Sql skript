@@ -1,0 +1,48 @@
+CREATE TABLE acl_object_identity (
+                                     id SERIAL PRIMARY KEY,
+                                     object_id_class INT NOT NULL,
+                                     object_id_identity BIGINT NOT NULL,
+                                     parent_object BIGINT,
+                                     owner_sid BIGINT,
+                                     entries_inheriting BOOL NOT NULL
+);
+
+CREATE UNIQUE INDEX uk_acl_object_identity ON acl_object_identity (
+                                                                   object_id_class, object_id_identity, parent_object
+    );
+
+CREATE TABLE acl_class (
+                           id INT NOT NULL PRIMARY KEY,
+                           class VARCHAR(255) NOT NULL
+);
+
+CREATE UNIQUE INDEX uk_acl_class ON acl_class (class);
+
+CREATE TABLE acl_entry (
+                           id SERIAL PRIMARY KEY,
+                           acl_object_identity BIGINT NOT NULL,
+                           ace_order INT NOT NULL,
+                           sid BIGINT NOT NULL,
+                           mask INT NOT NULL,
+                           granting BOOL NOT NULL,
+                           audit_success BOOL NOT NULL,
+                           audit_failure BOOL NOT NULL
+);
+
+INSERT INTO acl_class (id,class) VALUES (2,'com.kisonich.securityrole.dz32Role.model.Book');
+
+INSERT INTO acl_object_identity (id,object_id_class,object_id_identity,parent_object,owner_sid,entries_inheriting) VALUES
+    (2, 2, 1, NULL, 1, TRUE);
+
+INSERT INTO acl_entry (id,acl_object_identity,ace_order,sid,mask,granting,audit_success,audit_failure) VALUES
+                                                                                                           (1, 2, 0, 1, 1, TRUE, FALSE, FALSE), -- ROLE_ADMIN
+                                                                                                           (2, 2, 1, 2, 1, TRUE, FALSE, FALSE); -- ROLE_USER
+
+INSERT INTO acl_class (id,class) VALUES (3,'com.kisonich.securityrole.dz32Role.model.Order');
+
+INSERT INTO acl_object_identity (id,object_id_class,object_id_identity,parent_object,owner_sid,entries_inheriting) VALUES
+    (3, 3, 1, NULL, 1, TRUE);
+
+INSERT INTO acl_entry (id,acl_object_identity,ace_order,sid,mask,granting,audit_success,audit_failure) VALUES
+                                                                                                           (3, 3, 0, 1, 1, TRUE, FALSE, FALSE), -- ROLE_USER
+                                                                                                           (4, 3, 1, 2, 1, FALSE, FALSE, FALSE); -- ROLE_ADMIN
